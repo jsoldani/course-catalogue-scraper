@@ -514,12 +514,13 @@ def parse_arguments():
     return parser.parse_args()
 
 async def main():
-    global START_URL, OUTPUT_DIR
+    global START_URL, OUTPUT_DIR, LOG_FILE 
 
     args = parse_arguments()
 
     START_URL = args.start_url
     OUTPUT_DIR = Path(args.output_dir)
+    LOG_FILE = OUTPUT_DIR / "download_errors.log"
 
     OUTPUT_DIR.mkdir(
         parents=True,

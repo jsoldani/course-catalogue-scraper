@@ -15,7 +15,7 @@ def main():
         print("*****************************")
         url = COURSES[course]
         command = "python3 scrape_one.py --start-url '" + url + "' --output-dir '" + course + "'"
-        subprocess.run(command)
+        subprocess.run(command,shell=True)
 
 if __name__ == "__main__":
     main()
