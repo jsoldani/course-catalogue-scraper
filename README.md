@@ -8,6 +8,7 @@ La repository include i seguenti script:
 
 - **`scrape_one.py`**: scarica tutti i documenti PDF disponibili per un singolo CdS. Lo script naviga il Course Catalogue partendo dalla pagina relativa al CdS scelto, esplora ricorsivamente le eventuali sezioni e frazioni annidate (seguendo i collegamenti *Vedi dettaglio*) e scarica i relativi PDF.
 - **`scrape_all.py`**: esegue `scrape_one.py` per una lista predefinita di CdS, salvando i documenti scaricati in directory separate.
+- **`check_pdfs.py`** consente di verificare automaticamente la presenza di una serie di campi obbligatori nei PDF degli insegnamenti scaricati dal Course Catalogue.
 
 Durante l'esecuzione, `scrape_one.py` genera inoltre un file `download_errors.log`, che contiene informazioni sugli insegnamenti o sulle frazioni per cui, eventualmente, il download non è andato a buon fine.
 
@@ -116,3 +117,62 @@ Al termine dell'esecuzione, la directory della repository conterrà una cartella
 I nomi dei file PDF identificano l'insegnamento e, quando necessario, la frazione da cui è stato scaricato il documento, comprese le eventuali frazioni annidate.
 
 Il file `download_errors.log`, generato da `scrape_one.py` nella directory di lavoro corrente, riporta eventuali errori di navigazione o download.
+
+## Verifica dei PDF degli insegnamenti (`check_pdfs.py`)
+
+Lo script `check_pdfs.py` consente di verificare automaticamente la presenza di una serie di campi obbligatori nei PDF degli insegnamenti scaricati dal Course Catalogue.
+
+Lo script analizza ricorsivamente tutti i PDF presenti nella cartella specificata, incluse le eventuali sottocartelle, ed estrae il testo per verificare la presenza delle frasi richieste.
+
+### Requisiti
+
+Lo script utilizza la libreria Python `pypdf`, che può essere installata con:
+
+```bash
+pip install pypdf
+```
+
+### Utilizzo
+
+Lo script richiede come unico argomento il percorso della cartella contenente i PDF da analizzare:
+
+```bash
+python3 check_pdfs.py <cartella>
+```
+
+Ad esempio:
+
+```bash
+python3 check_pdfs.py INFR-L
+```
+
+L'analisi comprende tutti i file con estensione `.pdf` presenti nella cartella indicata e nelle sue sottocartelle.
+
+### Funzionamento
+
+Per ciascun PDF, lo script:
+1. Estrae il testo da tutte le pagine del documento.
+2. Normalizza il testo per rendere il confronto indipendente da maiuscole/minuscole, spazi e interruzioni di riga.
+3. Verifica la presenza di tutte le frasi obbligatorie definite nella lista `REQUIRED_PHRASES` all'interno dello script.
+4. Individua, quando presente, la prima riga contenente un codice alfanumerico racchiuso tra parentesi quadre (ad esempio `[12345]`).
+5. Registra le eventuali frasi mancanti.
+
+Alcuni PDF possono essere esclusi automaticamente dall'analisi: i codici identificativi da escludere sono definiti nella lista `EXCLUDED_CODES` all'interno dello script. Un PDF viene escluso quando il suo nome contiene uno dei codici presenti nella lista.
+
+### Report prodotti
+
+Al termine dell'analisi vengono generati tre report direttamente nella cartella specificata come argomento.
+
+| File | Descrizione |
+|---|---|
+| `_check_results.txt` | Report dettagliato dei PDF nei quali manca almeno una frase obbligatoria. Per ciascun documento riporta il nome del file, la riga contenente il codice identificativo (oppure un'indicazione se il codice non è stato trovato) e l'elenco delle frasi mancanti. Include inoltre una sezione dedicata ai PDF che non è stato possibile analizzare. |
+| `_check_results_short.csv` | Riepilogo sintetico delle verifiche. Per ciascuna frase riporta il numero di PDF in cui è assente e la lista dei relativi nomi (senza estensione). Il file è generato con codifica UTF-8 con BOM per facilitarne l'apertura con strumenti come Microsoft Excel. |
+| `_check_all_missing.txt` | Elenco dei soli PDF nei quali mancano tutte le frasi obbligatorie. Per ciascun documento riporta il nome del file e la riga contenente il codice identificativo (oppure un'indicazione se il codice non è stato trovato). |
+
+I PDF che non possono essere analizzati, ad esempio a causa di errori di lettura, vengono segnalati esclusivamente nel report dettagliato e non sono inclusi nel report `_check_all_missing.txt`, poiché non è possibile stabilire se contengano o meno i campi richiesti.
+
+### Personalizzazione
+
+È possibile modificare il comportamento dello script intervenendo sulle due liste definite all'inizio del file:
+
+- `REQUIRED_PHRASES`: contiene le frasi che devono essere presenti nei PDF. Per
