@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import argparse
 import csv
 import re
@@ -106,6 +108,14 @@ def is_excluded(pdf_path):
     )
 
 
+def get_course_code(pdf_path):
+    """
+    Restituisce il codice del corso ottenuto dal prefisso
+    del nome del file che precede il primo underscore.
+    """
+    return pdf_path.stem.split("_", 1)[0]
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Verifica la presenza di specifiche frasi nei PDF."
@@ -127,6 +137,7 @@ def main():
     output_path = folder_path / "_check_results.txt"
     short_output_path = folder_path / "_check_results_short.csv"
     all_missing_output_path = folder_path / "_check_all_missing.txt"
+    report_output_path = folder_path / "_check_results_report.txt"
 
     # Individuazione dei PDF ed esclusione di quelli specificati.
     all_pdf_files = sorted(
@@ -164,6 +175,12 @@ def main():
         phrase: [] for phrase in REQUIRED_PHRASES
     }
 
+    # Per ogni frase, memorizza i codici dei corsi in cui è assente.
+    # I codici sono mantenuti senza ripetizioni.
+    missing_codes_by_phrase = {
+        phrase: [] for phrase in REQUIRED_PHRASES
+    }
+
     for index, pdf_path in enumerate(pdf_files, start=1):
         print(f"[{index}/{len(pdf_files)}] Analisi: {pdf_path}")
 
@@ -172,6 +189,9 @@ def main():
 
             if missing_phrases:
                 incomplete_count += 1
+
+                # Codice del corso ricavato dal nome del file.
+                course_code = get_course_code(pdf_path)
 
                 # Generazione del report dettagliato.
                 report_lines.append(pdf_path.name)
@@ -188,11 +208,16 @@ def main():
 
                 report_lines.append("")
 
-                # Aggiorna il riepilogo per ciascuna frase mancante.
+                # Aggiorna i riepiloghi per ciascuna frase mancante.
                 for phrase in missing_phrases:
                     missing_by_phrase[phrase].append(
                         pdf_path.stem
                     )
+
+                    if course_code not in missing_codes_by_phrase[phrase]:
+                        missing_codes_by_phrase[phrase].append(
+                            course_code
+                        )
 
                 # Se mancano TUTTE le frasi, aggiunge il PDF
                 # al report dedicato.
@@ -267,6 +292,24 @@ def main():
                 "Nessun PDF presenta tutti i campi mancanti.\n"
             )
 
+    # Generazione del report compatto con i codici dei corsi.
+    with report_output_path.open(
+        "w",
+        encoding="utf-8"
+    ) as output_file:
+
+        output_file.write(
+            f"PDF con almeno una frase mancante: {incomplete_count}\n\n"
+        )
+
+        for phrase in REQUIRED_PHRASES:
+            missing_codes = missing_codes_by_phrase[phrase]
+
+            output_file.write(
+                f"{phrase} ({len(missing_codes)}): "
+                f"{', '.join(missing_codes)}\n"
+            )
+
     print("\nAnalisi completata.")
     print(f"PDF analizzati: {len(pdf_files)}")
     print(f"PDF con frasi mancanti: {incomplete_count}")
@@ -275,6 +318,7 @@ def main():
     print(f"Report dettagliato: {output_path}")
     print(f"Report sintetico CSV: {short_output_path}")
     print(f"Report tutti i campi mancanti: {all_missing_output_path}")
+    print(f"Report compatto: {report_output_path}")
 
 
 if __name__ == "__main__":

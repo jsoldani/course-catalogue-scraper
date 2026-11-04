@@ -151,6 +151,7 @@ L'analisi comprende tutti i file con estensione `.pdf` presenti nella cartella i
 ### Funzionamento
 
 Per ciascun PDF, lo script:
+
 1. Estrae il testo da tutte le pagine del documento.
 2. Normalizza il testo per rendere il confronto indipendente da maiuscole/minuscole, spazi e interruzioni di riga.
 3. Verifica la presenza di tutte le frasi obbligatorie definite nella lista `REQUIRED_PHRASES` all'interno dello script.
@@ -161,17 +162,25 @@ Alcuni PDF possono essere esclusi automaticamente dall'analisi: i codici identif
 
 ### Report prodotti
 
-Al termine dell'analisi vengono generati tre report direttamente nella cartella specificata come argomento.
+Al termine dell'analisi vengono generati quattro report direttamente nella cartella specificata come argomento.
 
 | File | Descrizione |
 |---|---|
 | `_check_results.txt` | Report dettagliato dei PDF nei quali manca almeno una frase obbligatoria. Per ciascun documento riporta il nome del file, la riga contenente il codice identificativo (oppure un'indicazione se il codice non è stato trovato) e l'elenco delle frasi mancanti. Include inoltre una sezione dedicata ai PDF che non è stato possibile analizzare. |
 | `_check_results_short.csv` | Riepilogo sintetico delle verifiche. Per ciascuna frase riporta il numero di PDF in cui è assente e la lista dei relativi nomi (senza estensione). Il file è generato con codifica UTF-8 con BOM per facilitarne l'apertura con strumenti come Microsoft Excel. |
 | `_check_all_missing.txt` | Elenco dei soli PDF nei quali mancano tutte le frasi obbligatorie. Per ciascun documento riporta il nome del file e la riga contenente il codice identificativo (oppure un'indicazione se il codice non è stato trovato). |
+| `_check_results_report.txt` | Report compatto che riporta il numero totale di PDF con almeno una frase mancante e, per ciascuna frase obbligatoria, la lista dei codici dei corsi in cui essa è assente, senza ripetizioni, insieme al numero di codici distinti. Il codice del corso è ricavato dal prefisso del nome del PDF che precede il primo carattere `_`. |
 
-I PDF che non possono essere analizzati, ad esempio a causa di errori di lettura, vengono segnalati esclusivamente nel report dettagliato e non sono inclusi nel report `_check_all_missing.txt`, poiché non è possibile stabilire se contengano o meno i campi richiesti.
+I PDF che non possono essere analizzati, ad esempio a causa di errori di lettura, vengono segnalati esclusivamente nel report dettagliato e non sono inclusi nel report `_check_all_missing.txt` né nei conteggi delle frasi mancanti, poiché non è possibile stabilire se contengano o meno i campi richiesti.
 
 ### Personalizzazione
+
+È possibile modificare il comportamento dello script intervenendo sulle due liste definite all'inizio del file:
+
+- `REQUIRED_PHRASES`: contiene le frasi che devono essere presenti nei PDF. Per aggiungere o rimuovere un controllo è sufficiente modificare questa lista.
+- `EXCLUDED_CODES`: contiene i codici identificativi dei PDF da escludere dall'analisi.
+
+In questo modo, lo script può essere facilmente riutilizzato per verificare documenti relativi a corsi di studio differenti o ad anni accademici successivi.
 
 È possibile modificare il comportamento dello script intervenendo sulle due liste definite all'inizio del file:
 
