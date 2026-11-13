@@ -40,10 +40,16 @@ REQUIRED_PHRASES = [
     "Modalità di verifica dei comportamenti",
     "Prerequisiti",
     "Co-requisites",
+    "Prerequisiti per studi successivi",
     "Indicazioni metodologiche",
     "Contenuti",
     "Bibliografia e materiale didattico",
+    "Stage e tirocini",
+    "Modalità d'esame",
     "Indicazioni per non frequentanti",
+    "Pagina web del corso",
+    "Altri riferimenti web",
+    "Altro",
     "Obiettivi Agenda 2030 per lo sviluppo sostenibile"
 ]
 
